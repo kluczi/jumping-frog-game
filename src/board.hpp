@@ -4,10 +4,10 @@
 #include "config.hpp"
 #include "game_logic.hpp"
 
+
 struct Board {
     WINDOW *board_win;
     chtype board[HEIGHT][WIDTH];
-
 };
 
 void colorInit() {
@@ -17,15 +17,25 @@ void colorInit() {
     init_pair(4, FINISH_COLOR, -1);
 }
 
-void boardInit(Board board) {
-    noecho(); //nei wyswietla nci terminalowego
-    curs_set(0); //ukrywa kursor
-    start_color(); //wlacza kolory
-    use_default_colors(); //nie zalacza tla tylko robi to terminalowo    
-    colorInit();                    
-    board.board_win = newwin(HEIGHT+2*OFFSET, WIDTH+2*OFFSET, 0, 0); // tworzenie nowego okna
-    box(board.board_win, 0, 0);
-    chtype zmienna[HEIGHT][WIDTH]; //lepszy typ dla literek
+void loadMap(char * file_name, chtype map[HEIGHT][WIDTH]) {
+    ifstream file(file_name);
+    if(!file) {
+        return;
+    }
+    for (int i = 0; i < 10; ++i) {
+        for (int j = 0; j < 10; ++j) {
+            char map_char=file.get();
+            while(map_char != '\n') {
+                map_char = file.get();
+            }
+            map[i][j] = map_char;
+        }
+    }
+    file.close();
+}
+
+void fillBoard(Board board) {
+    loadMap("map.txt", board.board); //generujemy plansze z pliku
     for(int x=0; x<HEIGHT; x++) {
         for(int y=0; y<WIDTH; y++) {
             
@@ -51,6 +61,18 @@ void boardInit(Board board) {
             }
         }
     } //dodaje znak do okna na konkretnej pozycji
+}
+
+void boardInit(Board board) {
+    noecho(); //nei wyswietla nci terminalowego
+    curs_set(0); //ukrywa kursor
+    start_color(); //wlacza kolory
+    use_default_colors(); //nie zalacza tla tylko robi to terminalowo    
+    colorInit();                    
+    board.board_win = newwin(HEIGHT+2*OFFSET, WIDTH+2*OFFSET, 0, 0); // tworzenie nowego okna
+    box(board.board_win, 0, 0);
+    chtype zmienna[HEIGHT][WIDTH]; //lepszy typ dla literek
+    
     mvwaddch(board.board_win, HEIGHT, (WIDTH/2)+1, ' ' | COLOR_PAIR(1) | A_REVERSE);
     // mvwaddch(board.board_win, HEIGHT, (WIDTH/2)-1, ' ' | COLOR_PAIR(1) | A_REVERSE);
     // mvwaddch(board.board_win, HEIGHT, (WIDTH/2)+1, ' ' | COLOR_PAIR(1) | A_REVERSE);
@@ -58,19 +80,3 @@ void boardInit(Board board) {
     keypad(board.board_win,true);
     
 }
-
-// void fillBoard(Board board) {
-
-// }
-
-// void drawBoard(Board board) {
-//     clear();
-//     for(int x=0; x<HEIGHT; x++) {
-//         for(int y=0; y<WIDTH;y++) {
-//             if(x%2==0) {
-//                 mvwaddch(board.board_win,x+OFFSET,y+OFFSET, ' ' | COLOR_PAIR(2) | A_REVERSE);
-//             }
-//         }
-//     }
-
-// }
