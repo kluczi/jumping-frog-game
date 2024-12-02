@@ -26,10 +26,6 @@
 // // }
 
 
-// void endGame(Player &player) {
-//     player.reset_pos();
-    
-// }
 
 
 
