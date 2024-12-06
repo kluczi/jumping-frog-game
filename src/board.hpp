@@ -69,7 +69,8 @@ void placeRandomCar(Board &board, Car &car, Car cars[]) {
                 car.pos_x = temp_x;
                 car.pos_y = temp_y;
                 car.direction = RA(0, 1) ? -1 : 1;
-                if (board.neutral_cars_count < 1 && RA(0, 1)) {
+
+                if (board.neutral_cars_count < 1) { // && RA(0, 1)
                     board.neutral_cars_count++;
                     car.type = 'N';
                     car.speed_timer = BASIC_NEUTRAL_CAR_SPEED;
@@ -226,7 +227,6 @@ bool checkBorder(Car car) {
 }
 
 void moveCars(Board &board, Player &player, Car cars[]) {
-    bool stopped = false;
     for (int i = 0; i < CARS; i++) {
         if (cars[i].speed_timer == 0) {
             if (!checkNeutralCar(player, cars[i])) {
@@ -282,7 +282,9 @@ void gameLoop(Board &board, Player &player, Car cars[], Status &status) {
             movePlayer(board, player, input);
             if (input != ERR) {
                 player.speed_timer = 10;
-                if (input == 'w') { // points are calculated by forward movement to prevent points being scored by right/left/down movement
+                // points are calculated by forward movement to
+                // prevent points being scored by right/left/down movement
+                if (input == 'w') {
                     player.moves++;
                 }
             }
@@ -297,7 +299,7 @@ void gameLoop(Board &board, Player &player, Car cars[], Status &status) {
             player.speed_timer--;
         }
 
-        for (int i = 0; i < CARS; i++) {
+        for (int i = 0; i < MIN_CARS + 1; i++) {
             cars[i].speed_timer--;
         }
 
@@ -318,7 +320,7 @@ void gameLoop(Board &board, Player &player, Car cars[], Status &status) {
 }
 
 void boardInit(Board &board, Status &status) {
-    noecho();             // nei wyswietla nci terminalowego
+    // noecho();             // nie wyswietla nic terminalowego
     curs_set(0);          // ukrywa kursor
     start_color();        // wlacza kolory
     use_default_colors(); // nie zalacza tla tylko robi to terminalowo
@@ -330,7 +332,10 @@ void boardInit(Board &board, Status &status) {
     start_row = ((y_max / 2) - (HEIGHT / 2));
     start_col = ((x_max / 2) - (WIDTH / 2));
     board.board_win = newwin(HEIGHT + (2 * OFFSET), WIDTH + (2 * OFFSET), start_row - 1, start_col - 1);
-    status.status_win = newwin(HEIGHT + (2 * OFFSET), 2 * WIDTH + (2 * OFFSET), start_row - 2, start_col + WIDTH + (2 * OFFSET) - 1);
+    status.status_win = newwin(HEIGHT + (2 * OFFSET),
+                               2 * WIDTH + (2 * OFFSET),
+                               start_row - 2,
+                               start_col + WIDTH + (2 * OFFSET) - 1);
     wrefresh(status.status_win);
     wrefresh(board.board_win);
     loadMapFromFile("src/map.txt", board.board);

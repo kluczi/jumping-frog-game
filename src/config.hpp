@@ -5,7 +5,7 @@
 #define ROAD 'R'
 #define FROG 'F'
 
-#define HEIGHT 12
+#define HEIGHT 14
 #define WIDTH 14
 #define OFFSET 1
 #define CARS 8

@@ -1,18 +1,15 @@
-#include <iostream>
 #include "src/board.hpp"
 #include "src/game_logic.hpp"
 #include <ctime>
+#include <iostream>
 using namespace std;
 
-
-int main()
-{   
+int main() {
     srand(time(0));
     Board board;
     Status status;
     initscr(); // inicjalizacja okna
     refresh();
     boardInit(board, status);
-    getch();  // oczekuje na przycisk
     endwin(); // zamyka okno
 }
