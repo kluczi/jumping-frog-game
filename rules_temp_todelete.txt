@@ -1,0 +1,8 @@
+Welcome to Magenta Froggy!
+Press any char to start...
+H - help, Q - quit
+
+RED CARS - enemy cars that kill you
+YELLOW CARS - neutral cars that will stop when they are close to you, you can jump over them vertically
+BLUE CARS - friendly cars that won't kill you but also will take you on the ride after pressing SPACE
+0 - holes, if u jump into them u die
