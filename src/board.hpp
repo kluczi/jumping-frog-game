@@ -1,14 +1,16 @@
-#pragma ONCE
+#pragma once
 
 #include <fstream>
 #include <ncurses.h>
 #include <unistd.h>
 
+#include "car.hpp"
 #include "config.hpp"
 #include "game_logic.hpp"
 
 using namespace std;
 
+// inicjalizuje kolory
 void colorInit() {
     init_pair(1, FROG_COLOR, COLOR_BLACK);
     init_pair(2, GRASS_COLOR, COLOR_BLACK);
@@ -18,19 +20,6 @@ void colorInit() {
     init_pair(6, FRIENDLY_CAR_COLOR, COLOR_BLACK);
     init_pair(7, NEUTRAL_CAR_COLOR, COLOR_BLACK);
     init_pair(8, HOLE_COLOR, COLOR_BLACK);
-}
-
-void endGame(Board &board, Player &player) {
-    werase(board.board_win);
-    mvwprintw(board.board_win, HEIGHT / 2 + 1, (WIDTH - 10) / 2, "Kum kum zabka");
-    wrefresh(board.board_win);
-    getch();
-    exit(0);
-}
-
-void calculatePoints(Player &player, int moves_counter, int timer) {
-    int points = points = ((moves_counter * 100) / (CARS + 1)) - (timer * 0.5); // points are calculated by following pattern: (moves forward*100/number of cars+1)-(time/2)
-    player.points = max(points, 0);                                             // preventing points to be negative
 }
 
 // functions to load data
@@ -51,98 +40,12 @@ void loadMapFromFile(const char *file_name, char map[HEIGHT][WIDTH]) {
     fclose(file);
 }
 
-void placeRandomCar(Board &board, Car &car, Car cars[]) {
-    bool well_placed = false;
-    while (!well_placed) {
-        int temp_x = RA(0, HEIGHT - 1);
-        int temp_y = RA(0, WIDTH - 1);
-        int cars_size = sizeof(cars) / sizeof(cars[0]);
-        if (board.board[temp_x][temp_y] == 'R') { // checking if random x,y are street
-            bool is_free = true;
-            for (int i = 0; i < CARS + 1; i++) { // checking if other car is on the x,y street
-                if (cars[i].pos_x == temp_x) {
-                    is_free = false;
-                    break;
-                }
-            }
-            if (is_free) {
-                car.pos_x = temp_x;
-                car.pos_y = temp_y;
-                car.direction = RA(0, 1) ? -1 : 1;
-
-                if (board.neutral_cars_count < 1) { // && RA(0, 1)
-                    board.neutral_cars_count++;
-                    car.type = 'N';
-                    car.speed_timer = BASIC_NEUTRAL_CAR_SPEED;
-                } else if (board.friendly_cars_count < MAX_FRIENDLY_CARS && RA(0, 1)) {
-                    board.friendly_cars_count++;
-                    car.type = 'F';
-                    car.speed_timer = BASIC_FRIENDLY_CAR_SPEED;
-                } else {
-                    car.type = 'E';
-                    car.speed_timer = BASIC_ENEMY_CAR_SPEED;
-                }
-                well_placed = true;
-            }
-        }
-    }
-}
-
-void loadCarsFromFile(const char *file_name, Car cars[CARS]) {
-    FILE *file = fopen(file_name, "r");
-    if (file == NULL) {
-        return;
-    }
-    for (int i = 0; i < CARS; i++) {
-        fscanf(file, "%d %d %d %c %d", &cars[i].pos_x, &cars[i].pos_y, &cars[i].direction, &cars[i].type, &cars[i].speed_timer);
-    }
-}
-
-void maintainCar(Board &board, Car cars[]) {
-    int active_cars = 0;
-    for (int i = 0; i < CARS; i++) {
-        if (cars[i].pos_y >= 0 && cars[i].pos_y < WIDTH) {
-            active_cars++;
-        }
-    }
-
-    for (int i = 0; i < CARS && active_cars < MIN_CARS; i++) {
-        if (cars[i].pos_y < 0 || cars[i].pos_y >= WIDTH) {
-            placeRandomCar(board, cars[i], cars);
-            active_cars++;
-        }
-    }
-}
-
-void movePlayer(Board &board, Player &player, chtype input) {
-    switch (input) {
-    case FORWARD:
-        if (player.pos_x > 0) {
-            player.pos_x--;
-        }
-        break;
-    case BACKWARD:
-        if (player.pos_x < HEIGHT - 1) {
-            player.pos_x++;
-        }
-        break;
-    case RIGHT:
-        if (player.pos_y < WIDTH - 1) {
-            player.pos_y++;
-        }
-        break;
-    case LEFT:
-        if (player.pos_y > 0) {
-            player.pos_y--;
-        }
-        break;
-    case QUIT:
-        endGame(board, player);
-        break;
-    }
-    if (player.pos_x == 0) {
-        endGame(board, player);
-    }
+void showStatus(Status &status, Player &player) {
+    mvwprintw(status.status_win, 1, 1, "Bartosz Kluska 203185");
+    mvwprintw(status.status_win, 3, 1, "Moves: %d", player.moves);
+    mvwprintw(status.status_win, 4, 1, "Time: %d", player.timer);
+    mvwprintw(status.status_win, 5, 1, "Points: %d", player.points);
+    wrefresh(status.status_win);
 }
 
 void drawBoard(Board board, Player player, Car cars[]) {
@@ -165,6 +68,7 @@ void drawBoard(Board board, Player player, Car cars[]) {
             }
         }
     }
+
     mvwaddch(board.board_win, player.pos_x, player.pos_y, ' ' | COLOR_PAIR(1) | A_REVERSE);
 
     for (int i = 0; i < CARS; i++) {
@@ -172,7 +76,11 @@ void drawBoard(Board board, Player player, Car cars[]) {
             if (cars[i].type == 'E') {
                 mvwaddch(board.board_win, cars[i].pos_x, cars[i].pos_y, ' ' | COLOR_PAIR(5) | A_REVERSE);
             } else if (cars[i].type == 'F') {
-                mvwaddch(board.board_win, cars[i].pos_x, cars[i].pos_y, ' ' | COLOR_PAIR(6) | A_REVERSE);
+                if (player.attached_to == &cars[i]) {
+                    mvwaddch(board.board_win, cars[i].pos_x, cars[i].pos_y, ' ' | COLOR_PAIR(1) | A_REVERSE);
+                } else {
+                    mvwaddch(board.board_win, cars[i].pos_x, cars[i].pos_y, ' ' | COLOR_PAIR(6) | A_REVERSE);
+                }
             } else {
                 mvwaddch(board.board_win, cars[i].pos_x, cars[i].pos_y, ' ' | COLOR_PAIR(7) | A_REVERSE);
             }
@@ -180,94 +88,6 @@ void drawBoard(Board board, Player player, Car cars[]) {
     }
 
     wrefresh(board.board_win);
-}
-
-void resetBoard(Board board, Player player, Car cars[]) {
-}
-
-bool checkCollisions(Board &board, Player &player, Car cars[]) {
-    for (int i = 0; i < CARS; i++) {
-        if (cars[i].type == 'E' && player.pos_x == cars[i].pos_x && player.pos_y == cars[i].pos_y) {
-            return true;
-        }
-    }
-    for (int x = 0; x < HEIGHT; x++) {
-        for (int y = 0; y < WIDTH; y++) {
-            if (board.board[x][y] == 'H' && player.pos_x == x && player.pos_y == y) { // checking if frog did not jump into the hole
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
-bool checkNeutralCar(Player &player, Car &car) {
-    if (car.type == 'N' && player.pos_x == car.pos_x && ((player.pos_y - 1 == car.pos_y && car.direction == 1) || (player.pos_y + 1 == car.pos_y && car.direction == -1))) {
-        return true;
-    }
-    return false;
-}
-
-bool checkFriendlyCar(Player &player, Car &car, chtype input) {
-    bool isFrogOnCar = false;
-    if (!isFrogOnCar && car.type == 'F' && player.pos_y == car.pos_y && (player.pos_x + 1 == car.pos_x || player.pos_x - 1 == car.pos_x)) {
-        player.pos_x = car.pos_x;
-        player.pos_y = car.pos_y;
-        isFrogOnCar = true;
-        return true;
-    }
-}
-
-bool checkBorder(Car car) {
-    if (RA(0, 1) == 1 && (car.pos_y == 0 || car.pos_y == WIDTH - 1)) {
-        return true;
-    }
-    return false;
-}
-
-void moveCars(Board &board, Player &player, Car cars[]) {
-    for (int i = 0; i < CARS; i++) {
-        if (cars[i].speed_timer == 0) {
-            if (!checkNeutralCar(player, cars[i])) {
-                if (RA(0, 1) == 0) {
-                    if (cars[i].pos_y > WIDTH - 1 || cars[i].pos_y < 0) {
-                        cars[i].pos_y = -1;
-                    } else {
-                        cars[i].pos_y += cars[i].direction;
-                    }
-                } else {
-                    cars[i].pos_y += cars[i].direction;
-                }
-                if (cars[i].pos_y > WIDTH - 1 || cars[i].pos_y < 0) {
-                    cars[i].direction *= -1;
-                    cars[i].pos_y += cars[i].direction;
-                }
-            }
-            if (cars[i].type == 'E') {
-                if (player.timer % 5 == 0) {
-                    cars[i].speed_timer = RA(1, 10);
-                } else {
-                    cars[i].speed_timer = RA(3, 10);
-                }
-            } else {
-                if (player.timer % 10 == 0) {
-                    cars[i].speed_timer = RA(10, 20);
-                } else {
-                    cars[i].speed_timer = RA(10, 15);
-                }
-            }
-        }
-    }
-    maintainCar(board, cars);
-}
-
-void showStatus(Status &status, Player &player) {
-    mvwprintw(status.status_win, 1, 1, "Bartosz Kluska 203185");
-    mvwprintw(status.status_win, 3, 1, "Moves: %d", player.moves);
-    mvwprintw(status.status_win, 4, 1, "Time: %d", player.timer);
-    mvwprintw(status.status_win, 5, 1, "Points: %d", player.points);
-    wrefresh(status.status_win);
 }
 
 void gameLoop(Board &board, Player &player, Car cars[], Status &status) {
@@ -278,8 +98,12 @@ void gameLoop(Board &board, Player &player, Car cars[], Status &status) {
         if (input == QUIT) {
             game_ended = true;
         }
+        if (player.attached_to) { // podazanie za friendly car, jesli user jest do niego attached
+            player.pos_x = player.attached_to->pos_x;
+            player.pos_y = player.attached_to->pos_y;
+        }
         if (player.speed_timer == 0) {
-            movePlayer(board, player, input);
+            movePlayer(board, player, status, input);
             if (input != ERR) {
                 player.speed_timer = 10;
                 // points are calculated by forward movement to
@@ -287,19 +111,30 @@ void gameLoop(Board &board, Player &player, Car cars[], Status &status) {
                 if (input == 'w') {
                     player.moves++;
                 }
+                if (player.attached_to && input == 'z') { // schodzenie z friendly cara
+                    player.attached_to = NULL;
+                    // przesuniecie gracza o 1 w gore
+                    player.pos_x--;
+                }
+                for (int i = 0; i < CARS; i++) {
+                    if (input == 'z' && checkFriendlyCar(player, cars[i])) { // wskakiwanie na friendly car
+                        player.attached_to = &cars[i];
+                    }
+                }
             }
         }
         if (checkCollisions(board, player, cars)) {
+            player.is_dead = true;
             game_ended = true;
+            endGame(board, player, status);
             break;
         }
         moveCars(board, player, cars);
-        maintainCar(board, cars);
         if (player.speed_timer > 0) {
             player.speed_timer--;
         }
 
-        for (int i = 0; i < MIN_CARS + 1; i++) {
+        for (int i = 0; i < CARS + 1; i++) {
             cars[i].speed_timer--;
         }
 
@@ -319,21 +154,20 @@ void gameLoop(Board &board, Player &player, Car cars[], Status &status) {
     }
 }
 
-void boardInit(Board &board, Status &status) {
-    // noecho();             // nie wyswietla nic terminalowego
+void game(Board &board, Status &status) {
+    noecho();             // nie wyswietla nic terminalowego
     curs_set(0);          // ukrywa kursor
     start_color();        // wlacza kolory
     use_default_colors(); // nie zalacza tla tylko robi to terminalowo
     colorInit();
-
-    int x_max, y_max;
     int start_row, start_col, end_row, end_col;
+    int x_max, y_max;
     getmaxyx(stdscr, y_max, x_max);
     start_row = ((y_max / 2) - (HEIGHT / 2));
     start_col = ((x_max / 2) - (WIDTH / 2));
     board.board_win = newwin(HEIGHT + (2 * OFFSET), WIDTH + (2 * OFFSET), start_row - 1, start_col - 1);
     status.status_win = newwin(HEIGHT + (2 * OFFSET),
-                               2 * WIDTH + (2 * OFFSET),
+                               2.5 * WIDTH + (2 * OFFSET),
                                start_row - 2,
                                start_col + WIDTH + (2 * OFFSET) - 1);
     wrefresh(status.status_win);
@@ -341,12 +175,11 @@ void boardInit(Board &board, Status &status) {
     loadMapFromFile("src/map.txt", board.board);
     board.friendly_cars_count = 0;
     board.neutral_cars_count = 0;
-    Car cars[CARS];
-    for (int i = 0; i < MIN_CARS; i++) {
+    Car cars[CARS + 1];
+    for (int i = 0; i < CARS; i++) {
         placeRandomCar(board, cars[i], cars);
     }
-    // loadCarsFromFile("src/cars.txt",cars);
-    Player player = {HEIGHT - 1, (WIDTH / 2), BASIC_PLAYER_SPEED, 0, 0, 0};
+    Player player = {HEIGHT - 1, (WIDTH / 2), BASIC_PLAYER_SPEED, 0, 0, 0, NULL, false};
 
     timeout(0);
     drawBoard(board, player, cars);

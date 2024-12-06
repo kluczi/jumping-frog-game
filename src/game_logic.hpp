@@ -1,5 +1,59 @@
-// #pragma ONCE
-// #include <ncurses.h>
-// #include <fstream>
-// #include "config.hpp"
+#pragma once
+#include "car.hpp"
+#include "config.hpp"
+#include <ncurses.h>
+#include <stdlib.h>
 
+void calculatePoints(Player &player, int moves_counter, int timer) {
+    int points = points = ((moves_counter * 100) / (CARS + 1)) - (timer * 0.5); // points are calculated by following pattern: (moves forward*100/number of cars+1)-(time/2)
+    player.points = fmax(points, 0);                                            // preventing points to be negative
+}
+
+void endGame(Board &board, Player &player, Status &status) {
+    werase(board.board_win);
+    werase(status.status_win);
+    wrefresh(status.status_win);
+    if (player.is_dead == false) {
+        mvwprintw(status.status_win, 1, 1, "Congrats you won in: %d seconds \n and reached: %d points\n", player.timer, player.points);
+    } else {
+        mvwprintw(status.status_win, 1, 1, "You died and reached: %d points\n", player.points);
+    }
+    wrefresh(board.board_win);
+    wrefresh(status.status_win);
+    getch();
+    delwin(status.status_win);
+    delwin(board.board_win);
+    exit(0);
+}
+
+void movePlayer(Board &board, Player &player, Status &status, chtype input) {
+    switch (input) {
+    case FORWARD:
+        if (player.pos_x > 0) {
+            player.pos_x--;
+        }
+        break;
+    case BACKWARD:
+        if (player.pos_x < HEIGHT - 1) {
+            player.pos_x++;
+        }
+        break;
+    case RIGHT:
+        if (player.pos_y < WIDTH - 1) {
+            player.pos_y++;
+        }
+        break;
+    case LEFT:
+        if (player.pos_y > 0) {
+            player.pos_y--;
+        }
+        break;
+    case QUIT:
+        player.is_dead = true;
+        endGame(board, player, status);
+        break;
+    }
+    if (player.pos_x == 0) {
+        endGame(board, player, status);
+    }
+}

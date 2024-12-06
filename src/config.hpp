@@ -1,4 +1,4 @@
-#pragma ONCE
+#pragma once
 #include <stdlib.h>
 
 #define GRASS 'G'
@@ -9,10 +9,8 @@
 #define WIDTH 14
 #define OFFSET 1
 #define CARS 8
-#define MIN_CARS 5
 #define MAX_FRIENDLY_CARS 2
-#define MAX_NEUTRAL_CARS 0
-#define HOLES 6
+#define MAX_NEUTRAL_CARS 1
 
 #define BASIC_ENEMY_CAR_SPEED 7
 #define BASIC_FRIENDLY_CAR_SPEED 10
@@ -49,6 +47,14 @@ struct Status {
     WINDOW *status_win;
 };
 
+struct Car {
+    int pos_x;
+    int pos_y;
+    int direction; // 1 stands for right, -1 stands for left
+    char type;     // E and 0 stands for enemy car, F and 1 stands for friendly car, N and 2 stands for neutral car
+    int speed_timer;
+};
+
 struct Player {
     int pos_x;
     int pos_y;
@@ -56,17 +62,11 @@ struct Player {
     int points;
     int moves;
     int timer;
+    Car *attached_to;
+    bool is_dead;
 };
 
 struct Hole {
     int pos_x;
     int pos_y;
-};
-
-struct Car {
-    int pos_x;
-    int pos_y;
-    int direction; // 1 stands for right, -1 stands for left
-    char type;     // E and 0 stands for enemy car, F and 1 stands for friendly car, N and 2 stands for neutral car
-    int speed_timer;
 };

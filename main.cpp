@@ -1,5 +1,5 @@
 #include "src/board.hpp"
-#include "src/game_logic.hpp"
+// #include "src/game_logic.hpp"
 #include <ctime>
 #include <iostream>
 using namespace std;
@@ -10,6 +10,6 @@ int main() {
     Status status;
     initscr(); // inicjalizacja okna
     refresh();
-    boardInit(board, status);
+    game(board, status);
     endwin(); // zamyka okno
 }
