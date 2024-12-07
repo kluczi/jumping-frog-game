@@ -5,8 +5,8 @@
 #include <stdlib.h>
 
 void calculatePoints(Player &player, int moves_counter, int timer) {
-    int points = points = ((moves_counter * 100) / (CARS + 1)) - (timer * 0.5); // points are calculated by following pattern: (moves forward*100/number of cars+1)-(time/2)
-    player.points = fmax(points, 0);                                            // preventing points to be negative
+    int points = ((moves_counter * 100) / (CARS + 1)) - (timer * 0.5); // points are calculated by following pattern: (moves forward*100/number of cars+1)-(time/2)
+    player.points = fmax(points, 0);                                   // preventing points to be negative
 }
 
 void endGame(Board &board, Player &player, Status &status) {
@@ -27,6 +27,7 @@ void endGame(Board &board, Player &player, Status &status) {
 }
 
 void movePlayer(Board &board, Player &player, Status &status, chtype input) {
+    // handles player movement based on the input key
     switch (input) {
     case FORWARD:
         if (player.pos_x > 0) {
@@ -49,10 +50,12 @@ void movePlayer(Board &board, Player &player, Status &status, chtype input) {
         }
         break;
     case QUIT:
+        // ends game if player chooses to quit
         player.is_dead = true;
         endGame(board, player, status);
         break;
     }
+    // checks if player is on top of the board (win condition)
     if (player.pos_x == 0) {
         endGame(board, player, status);
     }

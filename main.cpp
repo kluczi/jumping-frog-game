@@ -8,8 +8,8 @@ int main() {
     srand(time(0));
     Board board;
     Status status;
-    initscr(); // inicjalizacja okna
+    initscr(); // init window
     refresh();
     game(board, status);
-    endwin(); // zamyka okno
+    endwin(); // close window
 }
