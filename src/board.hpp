@@ -112,16 +112,16 @@ void gameLoop(Board &board, Player &player, Car cars[], Status &status) {
                 player.speed_timer = 10;
                 // points are calculated by forward movement to
                 // prevent points being scored by right/left/down movement
-                if (input == 'w') {
+                if (input == FORWARD) {
                     player.moves++;
                 }
-                if (player.attached_to && input == 'z') { // jumping off friendly car
+                if (player.attached_to && input == CAR_JUMP) { // jumping off friendly car
                     player.attached_to = NULL;
                     delete player.attached_to;
                     player.pos_x--;
                 }
                 for (int i = 0; i < CARS; i++) {
-                    if (input == 'z' && checkFriendlyCar(player, cars[i])) { // jumping on friendly car
+                    if (input == CAR_JUMP && checkFriendlyCar(player, cars[i])) { // jumping on friendly car
                         player.attached_to = &cars[i];
                     }
                 }

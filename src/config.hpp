@@ -30,7 +30,7 @@
 #define BACKWARD 's'
 #define LEFT 'a'
 #define RIGHT 'd'
-#define CAR_JUMP ' '
+#define CAR_JUMP 'z'
 #define QUIT 'q'
 #define RESET 'r'
 
