@@ -4,7 +4,7 @@ How to Play:
 To start the game, run: make && ./main
 Press Q to quit the game.
 Press Z to jump on and off a friendly car.
-
+Keys W, A, S, D to move.
 Car Types:
 RED CARS: Enemy cars that will kill you on contact.
 YELLOW CARS: Neutral cars that stop when are close to you. You can jump over them horizontally.
