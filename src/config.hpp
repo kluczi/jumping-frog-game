@@ -1,3 +1,4 @@
+// function "RA" taken from catch the ball
 #pragma once
 #include <stdlib.h>
 
@@ -34,7 +35,7 @@
 #define QUIT 'q'
 #define RESET 'r'
 
-#define RA(min, max) ((min) + rand() % ((max) - (min) + 1)) // function taken from catch the ball
+#define RA(min, max) ((min) + rand() % ((max) - (min) + 1))
 
 struct Board {
     WINDOW *board_win;
