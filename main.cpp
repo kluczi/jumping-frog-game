@@ -1,5 +1,4 @@
 #include "src/board.hpp"
-// #include "src/game_logic.hpp"
 #include <ctime>
 #include <iostream>
 using namespace std;
