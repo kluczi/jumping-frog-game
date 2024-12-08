@@ -190,7 +190,7 @@ void game(Board &board, Status &status) {
     colorInit();
 
     // center game and status window
-    int start_row, start_col, end_row, end_col;
+    int start_row, start_col;
     int x_max, y_max;
     getmaxyx(stdscr, y_max, x_max);
 
