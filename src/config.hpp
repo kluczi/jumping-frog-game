@@ -36,6 +36,7 @@
 #define RESET 'r'
 
 #define RA(min, max) ((min) + rand() % ((max) - (min) + 1))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 struct Board {
     WINDOW *board_win;

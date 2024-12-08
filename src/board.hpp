@@ -87,7 +87,7 @@ void drawBoard(Board board, Player player, Car cars[]) {
                 mvwaddch(board.board_win, cars[i].pos_x, cars[i].pos_y, ' ' | COLOR_PAIR(5) | A_REVERSE);
             } else if (cars[i].type == 'F') {
                 if (player.attached_to == &cars[i]) {
-                    mvwaddch(board.board_win, cars[i].pos_x, cars[i].pos_y, ' ' | COLOR_PAIR(1) | A_REVERSE); // frog is highlated if attached to friendly car
+                    mvwaddch(board.board_win, cars[i].pos_x, cars[i].pos_y, ' ' | COLOR_PAIR(1) | A_REVERSE); // frog is highlighted if attached to friendly car
                 } else {
                     mvwaddch(board.board_win, cars[i].pos_x, cars[i].pos_y, ' ' | COLOR_PAIR(6) | A_REVERSE);
                 }

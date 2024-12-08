@@ -7,7 +7,7 @@
 // points calculated by moving forward and based on number of cars, subtracting half of the timer value to encourage faster gameplay
 void calculatePoints(Player &player, int moves_counter, int timer) {
     int points = ((moves_counter * 100) / (CARS + 1)) - (timer * 0.5); // points are calculated by following pattern: (moves forward * 100 / (number of cars + 1)) - (time / 2)
-    player.points = fmax(points, 0);                                   // preventing points from being negative
+    player.points = MAX(points, 0);                                    // preventing points from being negative
 }
 
 void endGame(Board &board, Player &player, Status &status) {
